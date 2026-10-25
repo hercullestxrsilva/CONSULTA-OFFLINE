@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consulta de Preços</title>
+<meta name="description" content="Consulta de preços e soma de itens, funciona sem internet.">
+<meta name="theme-color" content="#0b5cab">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Preços">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="titulo">
+    <strong id="nomeLoja">Consulta de Preços</strong>
+    <span id="infoDados">Sem dados carregados</span>
+  </div>
+  <button id="btnMenu" class="btn-icone" aria-label="Menu e importação de dados">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+  </button>
+</header>
+
+<div id="avisoAtualizacao" class="aviso" hidden>
+  Nova versão do app disponível. <button id="btnAtualizarApp">Atualizar</button>
+</div>
+
+<main>
+  <!-- CONSULTAR -->
+  <section id="telaConsulta" class="tela ativa" aria-label="Consultar">
+    <div class="busca">
+      <input id="q" type="search" placeholder="Nome, código ou cód. de barras"
+             autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+             enterkeyhint="search" aria-label="Buscar produto">
+      <button id="btnCamera" class="btn-camera" aria-label="Ler código de barras com a câmera">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v4M3 15v4M21 5v4M21 15v4M7 6v12M10 6v12M14 6v12M17 6v12" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="resumoBusca" class="resumo"></div>
+    <ul id="resultados" class="lista"></ul>
+    <div id="semDados" class="vazio" hidden>
+      <h2>Nenhum dado carregado</h2>
+      <p>Gere o arquivo <b>produtos.json</b> no computador (programa <b>ATUALIZAR DADOS</b>) e envie para este celular.</p>
+      <button class="primario grande" data-acao="importar">Importar dados</button>
+    </div>
+    <div id="dicaBusca" class="vazio" hidden>
+      <p>Digite parte do nome (ex.: <i>caneta azul</i>), o código do produto ou toque no botão de código de barras para usar a câmera.</p>
+    </div>
+  </section>
+
+  <!-- SOMA -->
+  <section id="telaSoma" class="tela" aria-label="Soma">
+    <ul id="itensSoma" class="lista"></ul>
+    <div id="somaVazia" class="vazio">
+      <p>Nenhum item na soma.</p>
+      <p>Busque um produto e toque em <b>+</b>, ou leia códigos com a câmera ligando <b>Somar direto</b>.</p>
+    </div>
+    <div class="rodape-soma">
+      <div class="linha-total">
+        <span id="qtdItens">0 itens</span>
+        <strong id="totalSoma">R$ 0,00</strong>
+      </div>
+      <div class="linha-troco">
+        <label for="recebido">Recebido</label>
+        <input id="recebido" inputmode="decimal" placeholder="0,00" autocomplete="off">
+        <span id="troco"></span>
+      </div>
+      <div class="acoes">
+        <button id="btnAvulso">+ Avulso</button>
+        <button id="btnLimpar">Limpar</button>
+        <button id="btnFinalizar" class="primario">Finalizar venda</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VENDAS -->
+  <section id="telaVendas" class="tela" aria-label="Vendas anotadas">
+    <div class="cab-vendas">
+      <p>Vendas finalizadas neste celular (para lançar no Shop 9 depois).</p>
+      <div class="acoes">
+        <button id="btnCompartilharVendas">Compartilhar</button>
+        <button id="btnApagarVendas" class="perigo">Apagar todas</button>
+      </div>
+    </div>
+    <div id="listaVendas"></div>
+    <div id="vendasVazia" class="vazio"><p>Nenhuma venda anotada.</p></div>
+  </section>
+</main>
+
+<nav class="abas" aria-label="Telas">
+  <button data-tela="telaConsulta" class="ativa">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21" stroke-linecap="round"/></svg>
+    Consultar
+  </button>
+  <button data-tela="telaSoma">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h1M14 11h1M9 15h1M14 15h1"/></svg>
+    Soma <span id="badgeSoma" class="badge" hidden></span>
+  </button>
+  <button data-tela="telaVendas">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>
+    Vendas
+  </button>
+</nav>
+
+<!-- LEITOR DE CÓDIGO DE BARRAS -->
+<div id="scanner" class="scanner" hidden>
+  <video id="video" playsinline muted autoplay></video>
+  <div class="mira"><div class="linha-laser"></div></div>
+  <div class="scan-topo">
+    <button id="btnFecharScanner" class="btn-scan">✕ Fechar</button>
+    <button id="btnLanterna" class="btn-scan" hidden>Lanterna</button>
+  </div>
+  <div class="scan-rodape">
+    <div id="scanMsg" class="scan-msg">Aponte para o código de barras</div>
+    <label class="interruptor">
+      <input type="checkbox" id="somarDireto">
+      <span>Somar direto (cada leitura entra na soma)</span>
+    </label>
+    <div id="scanTotal" class="scan-total" hidden></div>
+  </div>
+</div>
+
+<!-- DETALHE DO PRODUTO -->
+<dialog id="dlgProduto" class="folha">
+  <form method="dialog" class="folha-conteudo">
+    <div id="detNome" class="det-nome"></div>
+    <div id="detPrecos" class="det-precos"></div>
+    <dl id="detInfo" class="det-info"></dl>
+    <div class="det-qtd">
+      <span>Quantidade</span>
+      <div class="stepper">
+        <button type="button" data-passo="-1" aria-label="Diminuir">−</button>
+        <input id="detQtd" inputmode="decimal" value="1" aria-label="Quantidade">
+        <button type="button" data-passo="1" aria-label="Aumentar">+</button>
+      </div>
+    </div>
+    <div class="acoes">
+      <button type="button" value="fechar">Fechar</button>
+      <button value="somar" class="primario" id="btnDetSomar">Somar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- MENU -->
+<dialog id="dlgMenu" class="folha">
+  <form method="dialog" class="folha-conteudo">
+    <h2>Dados</h2>
+    <p id="menuDados" class="texto-menor">Nenhum dado carregado.</p>
+    <button type="button" class="primario grande" data-acao="importar">Importar arquivo de dados</button>
+    <button type="button" class="grande" id="btnDadosOnline" hidden>Baixar dados do servidor</button>
+
+    <h2>Preço usado na soma</h2>
+    <select id="selTabela" aria-label="Tabela de preço usada na soma"></select>
+
+    <div id="dicaInstalar" class="caixa-dica" hidden>
+      <h2>Instalar no celular</h2>
+      <p><b>iPhone:</b> no Safari, toque em Compartilhar <span aria-hidden="true">⎙</span> e depois em <b>Adicionar à Tela de Início</b>.</p>
+      <p><b>Android:</b> no Chrome, toque no menu ⋮ e depois em <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>).</p>
+    </div>
+    <p class="texto-menor" id="versaoApp"></p>
+    <div class="acoes"><button value="fechar" class="primario">Fechar</button></div>
+  </form>
+</dialog>
+
+<!-- PERGUNTA (quantidade, preço, valor avulso) -->
+<dialog id="dlgPergunta" class="folha">
+  <form method="dialog" class="folha-conteudo" id="frmPergunta">
+    <h2 id="pergTitulo"></h2>
+    <label id="pergLabelTexto" class="campo" hidden>Descrição
+      <input id="pergTexto" autocomplete="off">
+    </label>
+    <label class="campo"><span id="pergLabel"></span>
+      <input id="pergValor" inputmode="decimal" autocomplete="off">
+    </label>
+    <div class="acoes">
+      <button type="button" value="cancelar">Cancelar</button>
+      <button value="ok" class="primario">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<input type="file" id="arquivo" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
