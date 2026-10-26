@@ -1,6 +1,6 @@
 /* Service worker: guarda o app no celular para abrir sem internet.
    Ao mudar qualquer arquivo do app, aumente VERSAO para os celulares baixarem a nova versão. */
-const VERSAO = 'consulta-precos-v2';
+const VERSAO = 'consulta-precos-v3';
 const ARQUIVOS = [
   './',
   'index.html',

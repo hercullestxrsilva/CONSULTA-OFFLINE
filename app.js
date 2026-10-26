@@ -3,7 +3,7 @@
    Dados: arquivo produtos.json gerado no computador a partir do backup do Shop 9.
    Produto = [codigo, nome, unidade, [precos em centavos por tabela], "barras1 barras2", estoque, flags] */
 
-const VERSAO_APP = '1.1.0';
+const VERSAO_APP = '1.2.0';
 const LIMITE_LISTA = 100;
 
 const $ = (s) => document.querySelector(s);
@@ -262,6 +262,21 @@ function somar(i, qtd = 1, silencioso = false) {
   if (!silencioso) toast(`${valor ? '' : 'SEM PREÇO! '}+${fmtQtd(qtd)} ${esc(p[1])}<br><b>Total ${fmt(totalSoma())}</b>`);
 }
 
+// botão + da lista de busca: pergunta a quantidade antes de somar
+async function somarPerguntando(i) {
+  const p = dados.produtos[i];
+  const { valor } = precoDe(i);
+  const r = await perguntar({
+    titulo: p[1],
+    rotulo: `Quantidade · ${valor ? fmt(valor) : 'sem preço'}${p[2] ? ' / ' + p[2] : ''}`,
+    valor: '1',
+  });
+  if (!r) return;
+  const q = lerNumero(r.valor);
+  if (!q || q <= 0) return toast('Quantidade inválida');
+  somar(i, arred3(q));
+}
+
 function renderSoma() {
   const ul = $('#itensSoma');
   ul.innerHTML = soma.map((it, k) => `<li class="item item-soma" data-k="${k}">
@@ -419,7 +434,9 @@ function perguntar({ titulo, rotulo, valor = '', comTexto = false }) {
     dlg.returnValue = '';
     dlg.onclose = () => ok(dlg.returnValue === 'ok' ? { valor: $('#pergValor').value, texto: $('#pergTexto').value } : null);
     dlg.showModal();
+    // foco ainda dentro do toque: no iPhone o teclado só abre assim
     const campo = comTexto ? $('#pergTexto') : $('#pergValor');
+    campo.focus();
     setTimeout(() => { campo.focus(); campo.select(); }, 60);
   });
 }
@@ -736,7 +753,7 @@ function ligarEventos() {
   });
   $('#resultados').addEventListener('click', (e) => {
     const add = e.target.closest('[data-add]');
-    if (add) { somar(Number(add.dataset.add), 1); return; }
+    if (add) { somarPerguntando(Number(add.dataset.add)); return; }
     if (e.target.closest('[data-mais]')) { mostrarMais(); return; }
     const li = e.target.closest('.item');
     if (li) abrirProduto(Number(li.dataset.i));
