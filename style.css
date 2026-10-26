@@ -80,13 +80,17 @@ main { padding-bottom: calc(var(--abas-h) + var(--seguro-baixo)); }
 
 .busca {
   position: sticky; top: calc(var(--topo-h) + var(--seguro-topo)); z-index: 4;
-  display: flex; gap: 8px; padding: 10px 12px; background: var(--fundo);
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: var(--fundo);
 }
+.linha-busca { display: flex; gap: 8px; }
+.linha-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .busca input {
   flex: 1; min-width: 0; height: 52px; padding: 0 14px;
   border: 2px solid var(--borda); border-radius: 12px; background: var(--cartao);
   font-size: 18px; outline: none;
 }
+/* 16px no mínimo: abaixo disso o iPhone dá zoom ao tocar no campo */
+.busca input.filtro { height: 44px; font-size: 16px; padding: 0 12px; border-radius: 10px; }
 .busca input:focus { border-color: var(--azul); }
 .btn-camera { width: 60px; height: 52px; padding: 0; background: var(--azul); border-color: var(--azul); color: #fff; display: grid; place-items: center; }
 .btn-camera svg { width: 30px; height: 30px; }
@@ -218,12 +222,14 @@ select, .campo input {
 
 /* ---------- toast ---------- */
 .toast {
-  position: fixed; left: 50%; top: calc(var(--topo-h) + var(--seguro-topo) + 12px); transform: translateX(-50%) translateY(-12px);
+  position: fixed; left: 50%; bottom: calc(var(--abas-h) + var(--seguro-baixo) + 16px); transform: translateX(-50%) translateY(12px);
   background: #222; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 15px; z-index: 30;
   opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: calc(100% - 32px); text-align: center;
 }
 .toast.visivel { opacity: 1; transform: translateX(-50%) translateY(0); }
-.scanner:not([hidden]) ~ .toast { top: auto; bottom: 170px; }
+/* na Soma o aviso fica acima do total; na câmera, acima da mensagem do leitor */
+body:has(#telaSoma.ativa) .toast { bottom: calc(var(--abas-h) + var(--seguro-baixo) + 200px); }
+.scanner:not([hidden]) ~ .toast { bottom: 170px; }
 
 @media (min-width: 700px) {
   main, .busca, .rodape-soma { max-width: 720px; margin-left: auto; margin-right: auto; }

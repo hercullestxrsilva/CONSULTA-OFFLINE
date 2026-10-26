@@ -3,7 +3,7 @@
    Dados: arquivo produtos.json gerado no computador a partir do backup do Shop 9.
    Produto = [codigo, nome, unidade, [precos em centavos por tabela], "barras1 barras2", estoque, flags] */
 
-const VERSAO_APP = '1.0.0';
+const VERSAO_APP = '1.1.0';
 const LIMITE_LISTA = 100;
 
 const $ = (s) => document.querySelector(s);
@@ -138,10 +138,13 @@ function acharPorCodigo(texto) {
   return r;
 }
 
-function procurar(q) {
-  const exatos = acharPorCodigo(q);
-  const termos = normalizar(q).split(/\s+/).filter(Boolean);
+// q = barra principal (nome, código ou cód. de barras); filtros = textos das barras extras.
+// O produto precisa conter todas as palavras de todas as barras.
+function procurar(q, filtros = []) {
+  const termosFiltro = normalizar(filtros.join(' ')).split(/\s+/).filter(Boolean);
+  const termos = normalizar(q).split(/\s+/).filter(Boolean).concat(termosFiltro);
   if (!termos.length) return [];
+  const exatos = acharPorCodigo(q).filter((i) => termosFiltro.every((t) => indice.norm[i].includes(t)));
   const ja = new Set(exatos);
   const comeca = [];
   const resto = [];
@@ -185,16 +188,18 @@ function htmlItem(i) {
 
 function renderResultados() {
   const q = $('#q').value.trim();
+  const filtros = [$('#q2').value.trim(), $('#q3').value.trim()];
+  const temBusca = !!(q || filtros[0] || filtros[1]);
   const ul = $('#resultados');
   $('#semDados').hidden = !!dados;
-  $('#dicaBusca').hidden = !dados || !!q;
-  if (!dados || !q) {
+  $('#dicaBusca').hidden = !dados || temBusca;
+  if (!dados || !temBusca) {
     ul.innerHTML = '';
     $('#resumoBusca').textContent = '';
     listaAtual = [];
     return;
   }
-  listaAtual = procurar(q);
+  listaAtual = procurar(q, filtros);
   mostrando = 0;
   ul.innerHTML = '';
   $('#resumoBusca').textContent = listaAtual.length
@@ -666,6 +671,8 @@ function lido(codigo) {
 
 function mostrarBusca(texto) {
   $('#q').value = texto;
+  $('#q2').value = '';
+  $('#q3').value = '';
   irPara('telaConsulta');
   renderResultados();
 }
@@ -714,17 +721,18 @@ function registrarSW() {
 /* ---------------------------------------------------------------- eventos */
 function ligarEventos() {
   let espera;
-  $('#q').addEventListener('input', () => {
-    clearTimeout(espera);
-    espera = setTimeout(renderResultados, 140);
-  });
-  $('#q').addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
-    clearTimeout(espera);
-    renderResultados();
-    const exatos = acharPorCodigo($('#q').value);
-    if (exatos.length === 1) abrirProduto(exatos[0]);
-    $('#q').blur();
+  document.querySelectorAll('.campo-busca').forEach((campo) => {
+    campo.addEventListener('input', () => {
+      clearTimeout(espera);
+      espera = setTimeout(renderResultados, 140);
+    });
+    campo.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      clearTimeout(espera);
+      renderResultados();
+      if (campo.id === 'q' && listaAtual.length === 1 && acharPorCodigo(campo.value).length === 1) abrirProduto(listaAtual[0]);
+      campo.blur();
+    });
   });
   $('#resultados').addEventListener('click', (e) => {
     const add = e.target.closest('[data-add]');

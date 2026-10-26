@@ -35,12 +35,22 @@
   <!-- CONSULTAR -->
   <section id="telaConsulta" class="tela ativa" aria-label="Consultar">
     <div class="busca">
-      <input id="q" type="search" placeholder="Nome, código ou cód. de barras"
-             autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
-             enterkeyhint="search" aria-label="Buscar produto">
-      <button id="btnCamera" class="btn-camera" aria-label="Ler código de barras com a câmera">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v4M3 15v4M21 5v4M21 15v4M7 6v12M10 6v12M14 6v12M17 6v12" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
+      <div class="linha-busca">
+        <input id="q" class="campo-busca" type="search" placeholder="Nome, código ou cód. de barras"
+               autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+               enterkeyhint="search" aria-label="Buscar produto">
+        <button id="btnCamera" class="btn-camera" aria-label="Ler código de barras com a câmera">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5v4M3 15v4M21 5v4M21 15v4M7 6v12M10 6v12M14 6v12M17 6v12" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="linha-filtros">
+        <input id="q2" class="campo-busca filtro" type="search" placeholder="E também contém…"
+               autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+               enterkeyhint="search" aria-label="Filtro adicional 1">
+        <input id="q3" class="campo-busca filtro" type="search" placeholder="E também contém…"
+               autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+               enterkeyhint="search" aria-label="Filtro adicional 2">
+      </div>
     </div>
     <div id="resumoBusca" class="resumo"></div>
     <ul id="resultados" class="lista"></ul>
@@ -51,6 +61,7 @@
     </div>
     <div id="dicaBusca" class="vazio" hidden>
       <p>Digite parte do nome (ex.: <i>caneta azul</i>), o código do produto ou toque no botão de código de barras para usar a câmera.</p>
+      <p>Use as duas barras de baixo para filtrar mais (ex.: <i>caderno</i> + <i>10x1</i> + <i>harry</i>).</p>
     </div>
   </section>
 
